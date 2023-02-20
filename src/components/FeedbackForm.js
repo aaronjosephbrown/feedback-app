@@ -2,7 +2,6 @@ import { useState } from 'react'
 import Card from './shared/Card'
 import Button from './shared/Button'
 import RatingSelect from './RatingSelect'
-import { v4 as uuidv4 } from 'uuid'
 import { useContext } from 'react'
 import FeedbackContext from '../context/FeedbackContext'
 import { useEffect } from 'react'
@@ -39,7 +38,6 @@ const FeedbackForm = () => {
     e.preventDefault()
     if (text.trim().length > 10) {
       const newFeedback = {
-        id: uuidv4(),
         text,
         rating,
       }

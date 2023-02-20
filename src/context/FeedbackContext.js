@@ -1,45 +1,66 @@
-import { createContext, useState } from 'react'
+import { createContext, useState, useEffect } from 'react'
 
 const FeedbackContext = createContext()
- 
+
 export const FeedbackProvider = ({ children }) => {
-  const [feedback, setFeedback] = useState([
-    {
-      id: '1',
-      rating: 10,
-      text: 'Lorem ipsum dolor sit amet consectetur adipisicing elit. consequuntur vel vitae commodi alias voluptatem est voluptatum ipsa quae.',
-    },
-    {
-      id: '2',
-      rating: 5,
-      text: 'Lorem ipsum dolor sit amet consectetur adipisicing elit. consequuntur vel vitae commodi alias voluptatem est voluptatum ipsa quae.',
-    },
-  ])
+  const [isLoading, setIsLoading] = useState(true)
+  const [feedback, setFeedback] = useState([])
 
   const [edit, setEdit] = useState({
     item: {},
     edit: false,
   })
 
-  const handleEdit = (id) => {
-    const newFeedback = feedback.filter((item) => item.id !== id)
-    setEdit({ item: feedback.find((item) => item.id === id), edit: true })
-    setFeedback(newFeedback)
+  useEffect(() => {
+    fetchFeedback()
+  }, [])
+
+  const fetchFeedback = async () => {
+    const res = await fetch('/feedback?_sort=id&_order=desc')
+    const data = await res.json()
+    setFeedback(data)
+    setIsLoading(false)
   }
 
-  const handleDelete = (id) => {
+  const handleEdit = async (id) => {
+    const res = await fetch(`/feedback/${id}`)
+    const data = await res.json()
+    setEdit({
+      item: data,
+      edit: true,
+    })
+  }
+
+  const handleDelete = async (id) => {
     if (!window.confirm('Are you sure you want to delete the feedback?')) return
-    const newFeedback = feedback.filter((item) => item.id !== id)
-    setFeedback(newFeedback)
+    await fetch(`/feedback/${id}`, {
+      method: 'DELETE',
+    })
+    setFeedback(feedback.filter((item) => item.id !== id))  
   }
 
-  const addFeedback = (newFeedback) => {
-    setFeedback([newFeedback, ...feedback])
+  const addFeedback = async (newFeedback) => {
+    const res = await fetch('/feedback', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify(newFeedback),
+    })
+    const data = await res.json()
+    setFeedback([data, ...feedback])
   }
 
   return (
     <FeedbackContext.Provider
-      value={{ feedback, addFeedback, handleDelete, handleEdit, edit }}
+      value={{
+        feedback,
+        addFeedback,
+        handleDelete,
+        handleEdit,
+        edit,
+        isLoading,
+      }}
     >
       {children}
     </FeedbackContext.Provider>
