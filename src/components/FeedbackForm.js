@@ -5,13 +5,21 @@ import RatingSelect from './RatingSelect'
 import { v4 as uuidv4 } from 'uuid'
 import { useContext } from 'react'
 import FeedbackContext from '../context/FeedbackContext'
+import { useEffect } from 'react'
 
 const FeedbackForm = () => {
   const [text, setText] = useState('')
   const [rating, setRating] = useState(10)
   const [btnDisabled, setBtnDisabled] = useState(true)
   const [message, setMessage] = useState('')
-  const { addFeedback } = useContext(FeedbackContext)
+  const { addFeedback, edit } = useContext(FeedbackContext)
+  useEffect(() => {
+    if (edit.edit) {
+      setBtnDisabled(false)
+      setText(edit.item.text)
+      setRating(edit.item.rating)
+    }
+  }, [edit])
 
   const handleTextChange = (e) => {
     if (text === '') {
